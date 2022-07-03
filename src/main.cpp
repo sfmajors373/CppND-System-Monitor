@@ -8,4 +8,7 @@ int main() {
   // NCursesDisplay::Display(system);
   std::cout << "System Uptime: " << system.UpTime() << std::endl;
   std::cout << "System kernel: " << system.Kernel() << std::endl;
+  std::cout << "System memory utilization: " << system.MemoryUtilization()
+            << std::endl;
+  std::cout << "System os: " << system.OperatingSystem() << std::endl;
 }

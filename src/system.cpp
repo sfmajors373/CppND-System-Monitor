@@ -49,20 +49,73 @@ std::string System::Kernel() {
   return line.substr(space_positions[1], length_of_kernel_string);
 }
 
-// TODO: Return the system's memory utilization
+// Return the system's memory utilization
 float System::MemoryUtilization() {
-  // grab first four lines of /proc/meminfo
   // total used mem = memTotal - MemFree
   // non-cache/buffer mem (green) = total used mem - (buffers + cached)
   // buffers (blue) = Buffers
   // Cached memory (yellow) = Cached + SReclaimable - Shmem
   // Swap = SwapTotal - SwapFree
-  // Return float --> percentage???
-  return 0.0;
+  string mem_total_line;
+  string mem_free_line;
+  std::vector<int> space_positions;
+  std::vector<int> space_positions2;
+  std::ifstream meminfo_file("/proc/meminfo");
+  if (meminfo_file.is_open()) {
+    getline(meminfo_file, mem_total_line);
+    getline(meminfo_file, mem_free_line);
+  }
+  // mem total
+  for (int i = 0; i < mem_total_line.length(); i++) {
+    if (mem_total_line[i] == ' ') {
+      space_positions.push_back(i);
+    }
+  }
+  int len = space_positions.size();
+  int word_end = space_positions[len - 1];
+  int word_begin = space_positions[len - 2];
+  string mem_total_str =
+      mem_total_line.substr(word_begin, word_end - word_begin);
+  int mem_total_int = std::stoi(mem_total_str);
+  // std::cout << "Mem total: " << mem_total_str << std::endl;
+
+  // mem free
+  for (int i = 0; i < mem_free_line.length(); i++) {
+    if (mem_free_line[i] == ' ') {
+      space_positions2.push_back(i);
+    }
+  }
+  len = space_positions2.size();
+  word_end = space_positions2[len - 1];
+  word_begin = space_positions2[len - 2];
+  string mem_free_str = mem_free_line.substr(word_begin, word_end - word_begin);
+  int mem_free_int = std::stoi(mem_free_str);
+  // std::cout << "Mem free: " << mem_free_str << std::endl;
+  float percent_mem_utilization =
+      ((mem_total_int - mem_free_int) / mem_total_int) * 100.0;
+  return mem_total_int * 1.0;
 }
 
-// TODO: Return the operating system name
-std::string System::OperatingSystem() { return string(); }
+// Return the operating system name
+std::string System::OperatingSystem() {
+  string line;
+  string os_name;
+  std::vector<int> quote_positions;
+  std::ifstream os_file("/etc/os-release");
+  if (os_file.is_open()) {
+    getline(os_file, line);
+    if (line.find("PRETTY_NAME")) {
+      for (int i = 0; i < line.length(); i++) {
+        if (line[i] == '"') {
+          quote_positions.push_back(i);
+        }
+      }
+      int length = line.length() - quote_positions[0];
+      os_name = line.substr(quote_positions[0] + 1, length - 2);
+    }
+  }
+  return os_name;
+}
 
 // TODO: Return the number of processes actively running on the system
 int System::RunningProcesses() { return 0; }
