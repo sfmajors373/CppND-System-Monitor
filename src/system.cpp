@@ -91,9 +91,7 @@ float System::MemoryUtilization() {
   string mem_free_str = mem_free_line.substr(word_begin, word_end - word_begin);
   int mem_free_int = std::stoi(mem_free_str);
   // std::cout << "Mem free: " << mem_free_str << std::endl;
-  float percent_mem_utilization =
-      ((mem_total_int - mem_free_int) / mem_total_int) * 100.0;
-  return mem_total_int * 1.0;
+  return ((float)(mem_total_int - mem_free_int) / mem_total_int) * 100.0;
 }
 
 // Return the operating system name
@@ -102,9 +100,11 @@ std::string System::OperatingSystem() {
   string os_name;
   std::vector<int> quote_positions;
   std::ifstream os_file("/etc/os-release");
-  if (os_file.is_open()) {
-    getline(os_file, line);
-    if (line.find("PRETTY_NAME")) {
+  while (getline(os_file, line)) {
+    // std::cout << "line: " << line << std::endl;
+    // std::cout << "line.find(): " << line.find("PRETTY_NAME") << std::endl;
+    if (line.find("PRETTY_NAME") != std::string::npos) {
+      // std::cout << "pretty name: " << line << std::endl;
       for (int i = 0; i < line.length(); i++) {
         if (line[i] == '"') {
           quote_positions.push_back(i);
@@ -117,11 +117,45 @@ std::string System::OperatingSystem() {
   return os_name;
 }
 
-// TODO: Return the number of processes actively running on the system
-int System::RunningProcesses() { return 0; }
+// Return the number of processes actively running on the system
+int System::RunningProcesses() {
+  string line;
+  string process_number_string;
+  std::vector<int> space_positions;
+  std::ifstream stats_file("/proc/stat");
+  while (getline(stats_file, line)) {
+    if (line.find("procs_running") != std::string::npos) {
+      for (int i = 0; i < line.length(); i++) {
+        if (line[i] == ' ') {
+          space_positions.push_back(i);
+        }
+      }
+      int str_length = line.length() - space_positions[0];
+      process_number_string = line.substr(space_positions[0], str_length);
+    }
+  }
+  return std::stoi(process_number_string);
+}
 
-// TODO: Return the total number of processes on the system
-int System::TotalProcesses() { return 0; }
+// Return the total number of processes on the system
+int System::TotalProcesses() {
+  string line;
+  string process_number_string;
+  std::vector<int> space_positions;
+  std::ifstream stats_file("/proc/stat");
+  while (getline(stats_file, line)) {
+    if (line.find("processes") != std::string::npos) {
+      for (int i = 0; i < line.length(); i++) {
+        if (line[i] == ' ') {
+          space_positions.push_back(i);
+        }
+      }
+      int str_length = line.length() - space_positions[0];
+      process_number_string = line.substr(space_positions[0], str_length);
+    }
+  }
+  return std::stoi(process_number_string);
+}
 
 // Return the number of seconds since the system started running
 long int System::UpTime() {
