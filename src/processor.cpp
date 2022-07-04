@@ -8,7 +8,7 @@
 using std::string;
 using std::vector;
 
-// TODO: Return the aggregate CPU utilization
+// Return the aggregate CPU utilization
 float Processor::Utilization() {
   string line;
   std::vector<int> space_positions;
