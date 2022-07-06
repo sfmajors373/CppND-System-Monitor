@@ -75,5 +75,5 @@ float Processor::Utilization() {
   int Idle = idle + iowait;
   int NonIdle = user + nice + system + irq + softirq + steal;
   int Total = Idle + NonIdle;
-  return ((float)Total - Idle) / Total * 100;
+  return ((float)Total - Idle) / Total;
 }

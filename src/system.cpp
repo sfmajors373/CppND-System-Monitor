@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "linux_parser.h"
 #include "process.h"
 #include "processor.h"
 
@@ -27,7 +28,14 @@ format. cpp for formatting the uptime.*/
 Processor& System::Cpu() { return cpu_; }
 
 // TODO: Return a container composed of the system's processes
-vector<Process>& System::Processes() { return processes_; }
+vector<Process>& System::Processes() {
+  vector<int> pids = LinuxParser::Pids();
+  vector<Process> processes_;
+  for (int i = 0; i < pids.size(); i++) {
+    processes_.push_back(Process(pids[i]));
+  }
+  return processes_;
+}
 
 // TODO: Return the system's kernel identifier (string)
 std::string System::Kernel() {
@@ -91,7 +99,7 @@ float System::MemoryUtilization() {
   string mem_free_str = mem_free_line.substr(word_begin, word_end - word_begin);
   int mem_free_int = std::stoi(mem_free_str);
   // std::cout << "Mem free: " << mem_free_str << std::endl;
-  return ((float)(mem_total_int - mem_free_int) / mem_total_int) * 100.0;
+  return ((float)(mem_total_int - mem_free_int) / mem_total_int);
 }
 
 // Return the operating system name
