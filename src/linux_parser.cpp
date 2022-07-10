@@ -72,7 +72,25 @@ vector<int> LinuxParser::Pids() {
 float LinuxParser::MemoryUtilization() { return 0.0; }
 
 // TODO: Read and return the system uptime
-long LinuxParser::UpTime() { return 0; }
+long LinuxParser::UpTime() {
+  // /proc/uptime first number
+  string line;
+  string uptime_string;
+  long int uptime;
+  string::size_type sz;
+  std::ifstream uptime_file("/proc/uptime");
+  if (uptime_file.is_open()) {
+    getline(uptime_file, line);
+    int i = 0;
+    while (line[i] != ' ') {
+      i = i + 1;
+    }
+    uptime_string = line.substr(0, i);
+    uptime_file.close();
+  }
+  uptime = std::stol(uptime_string, &sz);
+  return uptime;
+}
 
 // TODO: Read and return the number of jiffies for the system
 long LinuxParser::Jiffies() { return 0; }
