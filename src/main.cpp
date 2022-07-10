@@ -23,4 +23,6 @@ int main() {
             << std::endl;
   std::cout << "Process Command: " << process.Command() << std::endl;
   std::cout << "Process Ram: " << process.Ram() << std::endl;
+  std::cout << "Process User: " << process.User() << std::endl;
+  std::cout << "Process Uptime: " << process.UpTime() << std::endl;
 }
