@@ -17,10 +17,6 @@ string Format::ElapsedTime(long seconds [[maybe_unused]]) {
   hours = std::to_string(total_minutes / 60);
   minutes = std::to_string(total_minutes % 60);
   left_over_seconds = std::to_string(seconds % 60);
-  std::cout << "Hours: " << hours << std::endl;
-  std::cout << "Minutes: " << minutes << std::endl;
-  std::cout << "Seconds: " << left_over_seconds << std::endl;
   string formatted_time = hours + ":" + minutes + ":" + left_over_seconds;
-  std::cout << "Formatted time: " << formatted_time << std::endl;
   return formatted_time;
 }

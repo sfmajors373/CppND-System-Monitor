@@ -3,6 +3,7 @@
 #include <dirent.h>
 #include <unistd.h>
 
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -68,10 +69,45 @@ vector<int> LinuxParser::Pids() {
   return pids;
 }
 
-// TODO: Read and return the system memory utilization
-float LinuxParser::MemoryUtilization() { return 0.0; }
+// Read and return the system memory utilization
+float LinuxParser::MemoryUtilization() {
+  string mem_total_line;
+  string mem_free_line;
+  std::vector<int> space_positions;
+  std::vector<int> space_positions2;
+  std::ifstream meminfo_file("/proc/meminfo");
+  if (meminfo_file.is_open()) {
+    getline(meminfo_file, mem_total_line);
+    getline(meminfo_file, mem_free_line);
+  }
+  // mem total
+  for (int i = 0; i < mem_total_line.length(); i++) {
+    if (mem_total_line[i] == ' ') {
+      space_positions.push_back(i);
+    }
+  }
+  int len = space_positions.size();
+  int word_end = space_positions[len - 1];
+  int word_begin = space_positions[len - 2];
+  string mem_total_str =
+      mem_total_line.substr(word_begin, word_end - word_begin);
+  int mem_total_int = std::stoi(mem_total_str);
 
-// TODO: Read and return the system uptime
+  // mem free
+  for (int i = 0; i < mem_free_line.length(); i++) {
+    if (mem_free_line[i] == ' ') {
+      space_positions2.push_back(i);
+    }
+  }
+  len = space_positions2.size();
+  word_end = space_positions2[len - 1];
+  word_begin = space_positions2[len - 2];
+  string mem_free_str = mem_free_line.substr(word_begin, word_end - word_begin);
+  int mem_free_int = std::stoi(mem_free_str);
+  return ((float)(mem_total_int - mem_free_int) / mem_total_int);
+}
+
+// Read and return the system uptime
 long LinuxParser::UpTime() {
   // /proc/uptime first number
   string line;
@@ -95,9 +131,27 @@ long LinuxParser::UpTime() {
 // TODO: Read and return the number of jiffies for the system
 long LinuxParser::Jiffies() { return 0; }
 
-// TODO: Read and return the number of active jiffies for a PID
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid [[maybe_unused]]) { return 0; }
+// Read and return the number of active jiffies for a PID
+long LinuxParser::ActiveJiffies(int pid) {
+  string line;
+  std::ifstream stat_file("/proc/" + std::to_string(pid) + "/stat");
+  std::vector<int> space_positions;
+  long int uptime;
+  long int jiffies;
+  string jiffies_string;
+  long int seconds;
+  while (getline(stat_file, line)) {
+    for (int i = 0; i < line.length(); i++) {
+      if (line[i] == ' ') {
+        space_positions.push_back(i);
+      }
+    }
+    int word_length = space_positions[21] - space_positions[20];
+    jiffies_string = line.substr(space_positions[20] + 1, word_length);
+    jiffies = std::stol(jiffies_string);
+  }
+  return jiffies;
+}
 
 // TODO: Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies() { return 0; }
@@ -106,30 +160,121 @@ long LinuxParser::ActiveJiffies() { return 0; }
 long LinuxParser::IdleJiffies() { return 0; }
 
 // TODO: Read and return CPU utilization
+// ????? A vector of what????  In what order????  What does it mean???
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
-// TODO: Read and return the total number of processes
-int LinuxParser::TotalProcesses() { return 0; }
+// Read and return the total number of processes
+int LinuxParser::TotalProcesses() {
+  string line;
+  string process_number_string;
+  std::vector<int> space_positions;
+  std::ifstream stats_file("/proc/stat");
+  while (getline(stats_file, line)) {
+    if (line.find("processes") != std::string::npos) {
+      for (int i = 0; i < line.length(); i++) {
+        if (line[i] == ' ') {
+          space_positions.push_back(i);
+        }
+      }
+      int str_length = line.length() - space_positions[0];
+      process_number_string = line.substr(space_positions[0], str_length);
+    }
+  }
+  return std::stoi(process_number_string);
+}
 
-// TODO: Read and return the number of running processes
-int LinuxParser::RunningProcesses() { return 0; }
+// Read and return the number of running processes
+int LinuxParser::RunningProcesses() {
+  string line;
+  string process_number_string;
+  std::vector<int> space_positions;
+  std::ifstream stats_file("/proc/stat");
+  while (getline(stats_file, line)) {
+    if (line.find("procs_running") != std::string::npos) {
+      for (int i = 0; i < line.length(); i++) {
+        if (line[i] == ' ') {
+          space_positions.push_back(i);
+        }
+      }
+      int str_length = line.length() - space_positions[0];
+      process_number_string = line.substr(space_positions[0], str_length);
+    }
+  }
+  return std::stoi(process_number_string);
+}
 
-// TODO: Read and return the command associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Command(int pid [[maybe_unused]]) { return string(); }
+// Read and return the command associated with a process
+string LinuxParser::Command(int pid) {
+  string line;
+  std::ifstream command_file("/proc/" + std::to_string(pid) + "/cmdline");
+  if (command_file.is_open()) {
+    getline(command_file, line);
+  }
+  return line;
+}
 
-// TODO: Read and return the memory used by a process
-// REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Ram(int pid [[maybe_unused]]) { return string(); }
+// Read and return the memory used by a process
+string LinuxParser::Ram(int pid) {
+  string line;
+  std::vector<int> space_positions;
+  std::ifstream command_file("/proc/" + std::to_string(pid) + "/status");
+  while (getline(command_file, line)) {
+    if (line.find("VmSize") != std::string::npos) {
+      for (int i = 0; i < line.length(); i++) {
+        if (line[i] == ' ') {
+          space_positions.push_back(i);
+        }
+      }
+      int spaces = space_positions.size();
+      int length = space_positions[spaces - 1] - space_positions[spaces - 2];
+      string kb_string = line.substr(space_positions[spaces - 2], length);
+      int kb_int = std::stoi(kb_string);
+      // convert kb to mb
+      float mb_float = (float)kb_int / 1000;
+      return std::to_string(mb_float);
+    }
+  }
+}
 
-// TODO: Read and return the user ID associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Uid(int pid [[maybe_unused]]) { return string(); }
+// Read and return the user ID associated with a process
+string LinuxParser::Uid(int pid) {
+  string line;
+  std::ifstream status_file("/proc/" + std::to_string(pid) + "/status");
+  std::vector<int> space_positions;
+  string user;
+  while (getline(status_file, line)) {
+    if (line.find("Uid") != std::string::npos) {
+      for (int i = 0; i < line.length(); i++) {
+        if (line[i] == '\t') {
+          space_positions.push_back(i);
+        }
+      }
+      int word_length = space_positions[1] - space_positions[0];
+      user = line.substr(space_positions[0] + 1, word_length - 1);
+    }
+  }
+  return user;
+}
 
-// TODO: Read and return the user associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::User(int pid [[maybe_unused]]) { return string(); }
+// Read and return the user associated with a process
+string LinuxParser::User(int pid) {
+  string line;
+  std::ifstream etc_file("/etc/passwd");
+  string uid = Uid(pid);
+  string user;
+  while (getline(etc_file, line)) {
+    if (line.find(uid) != std::string::npos) {
+      int colon_location = line.find(":");
+      user = line.substr(0, colon_location);
+    }
+  }
 
-// TODO: Read and return the uptime of a process
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid [[maybe_unused]]) { return 0; }
+  return user;
+}
+
+// Read and return the uptime of a process
+long LinuxParser::UpTime(int pid) {
+  long int jiffies = ActiveJiffies(pid);
+  long seconds = jiffies / sysconf(_SC_CLK_TCK);
+  return seconds;
+}

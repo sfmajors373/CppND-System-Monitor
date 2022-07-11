@@ -24,20 +24,24 @@ system."
 You need to properly format the uptime. Refer to the comments mentioned in
 format. cpp for formatting the uptime.*/
 
-// TODO: Return the system's CPU
-Processor& System::Cpu() { return cpu_; }
+// Return the system's CPU
+Processor& System::Cpu() {
+  Processor cpu_;
+  return cpu_;
+}
 
-// TODO: Return a container composed of the system's processes
+// Return a container composed of the system's processes
 vector<Process>& System::Processes() {
   vector<int> pids = LinuxParser::Pids();
-  vector<Process> processes_;
+  processes_.clear();
   for (int i = 0; i < pids.size(); i++) {
-    processes_.push_back(Process(pids[i]));
+    Process process(pids[i]);
+    processes_.push_back(process);
   }
   return processes_;
 }
 
-// TODO: Return the system's kernel identifier (string)
+// Return the system's kernel identifier (string)
 std::string System::Kernel() {
   string line;
   std::vector<int> space_positions;
@@ -58,49 +62,7 @@ std::string System::Kernel() {
 }
 
 // Return the system's memory utilization
-float System::MemoryUtilization() {
-  // total used mem = memTotal - MemFree
-  // non-cache/buffer mem (green) = total used mem - (buffers + cached)
-  // buffers (blue) = Buffers
-  // Cached memory (yellow) = Cached + SReclaimable - Shmem
-  // Swap = SwapTotal - SwapFree
-  string mem_total_line;
-  string mem_free_line;
-  std::vector<int> space_positions;
-  std::vector<int> space_positions2;
-  std::ifstream meminfo_file("/proc/meminfo");
-  if (meminfo_file.is_open()) {
-    getline(meminfo_file, mem_total_line);
-    getline(meminfo_file, mem_free_line);
-  }
-  // mem total
-  for (int i = 0; i < mem_total_line.length(); i++) {
-    if (mem_total_line[i] == ' ') {
-      space_positions.push_back(i);
-    }
-  }
-  int len = space_positions.size();
-  int word_end = space_positions[len - 1];
-  int word_begin = space_positions[len - 2];
-  string mem_total_str =
-      mem_total_line.substr(word_begin, word_end - word_begin);
-  int mem_total_int = std::stoi(mem_total_str);
-  // std::cout << "Mem total: " << mem_total_str << std::endl;
-
-  // mem free
-  for (int i = 0; i < mem_free_line.length(); i++) {
-    if (mem_free_line[i] == ' ') {
-      space_positions2.push_back(i);
-    }
-  }
-  len = space_positions2.size();
-  word_end = space_positions2[len - 1];
-  word_begin = space_positions2[len - 2];
-  string mem_free_str = mem_free_line.substr(word_begin, word_end - word_begin);
-  int mem_free_int = std::stoi(mem_free_str);
-  // std::cout << "Mem free: " << mem_free_str << std::endl;
-  return ((float)(mem_total_int - mem_free_int) / mem_total_int);
-}
+float System::MemoryUtilization() { return LinuxParser::MemoryUtilization(); }
 
 // Return the operating system name
 std::string System::OperatingSystem() {
@@ -126,62 +88,10 @@ std::string System::OperatingSystem() {
 }
 
 // Return the number of processes actively running on the system
-int System::RunningProcesses() {
-  string line;
-  string process_number_string;
-  std::vector<int> space_positions;
-  std::ifstream stats_file("/proc/stat");
-  while (getline(stats_file, line)) {
-    if (line.find("procs_running") != std::string::npos) {
-      for (int i = 0; i < line.length(); i++) {
-        if (line[i] == ' ') {
-          space_positions.push_back(i);
-        }
-      }
-      int str_length = line.length() - space_positions[0];
-      process_number_string = line.substr(space_positions[0], str_length);
-    }
-  }
-  return std::stoi(process_number_string);
-}
+int System::RunningProcesses() { return LinuxParser::RunningProcesses(); }
 
 // Return the total number of processes on the system
-int System::TotalProcesses() {
-  string line;
-  string process_number_string;
-  std::vector<int> space_positions;
-  std::ifstream stats_file("/proc/stat");
-  while (getline(stats_file, line)) {
-    if (line.find("processes") != std::string::npos) {
-      for (int i = 0; i < line.length(); i++) {
-        if (line[i] == ' ') {
-          space_positions.push_back(i);
-        }
-      }
-      int str_length = line.length() - space_positions[0];
-      process_number_string = line.substr(space_positions[0], str_length);
-    }
-  }
-  return std::stoi(process_number_string);
-}
+int System::TotalProcesses() { return LinuxParser::TotalProcesses(); }
 
 // Return the number of seconds since the system started running
-long int System::UpTime() {
-  // /proc/uptime first number
-  string line;
-  string uptime_string;
-  long int uptime;
-  string::size_type sz;
-  std::ifstream uptime_file("/proc/uptime");
-  if (uptime_file.is_open()) {
-    getline(uptime_file, line);
-    int i = 0;
-    while (line[i] != ' ') {
-      i = i + 1;
-    }
-    uptime_string = line.substr(0, i);
-    uptime_file.close();
-  }
-  uptime = std::stol(uptime_string, &sz);
-  return uptime;
-}
+long int System::UpTime() { return LinuxParser::UpTime(); }

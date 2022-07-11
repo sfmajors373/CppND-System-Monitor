@@ -8,9 +8,10 @@
 
 int main() {
   System system;
-  Processor processor;
-  Process process = Process(1130);
-  // NCursesDisplay::Display(system);
+  // Processor processor;
+  // Process process = Process(1130);
+  NCursesDisplay::Display(system);
+  /*
   std::cout << "System Uptime: " << system.UpTime() << std::endl;
   std::cout << "System kernel: " << system.Kernel() << std::endl;
   std::cout << "System memory utilization: " << system.MemoryUtilization()
@@ -28,5 +29,6 @@ int main() {
   std::cout << "Process Uptime: " << process.UpTime() << std::endl;
   std::cout << "Process Cpu Utilization: " << process.CpuUtilization()
             << std::endl;
+  */
   // Format::ElapsedTime(5832);
 }
