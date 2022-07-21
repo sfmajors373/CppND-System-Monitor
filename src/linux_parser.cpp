@@ -249,13 +249,16 @@ string LinuxParser::User(int pid) {
   string line;
   std::ifstream etc_file("/etc/passwd");
   string uid = Uid(pid);
+  // std::cout << "UID: *" << uid << "*" << std::endl;
+  string extended_uid = ":" + uid + ":";
   string user;
   while (getline(etc_file, line)) {
-    if (line.find(uid) != std::string::npos) {
+    if (line.find(extended_uid) != std::string::npos) {
       int colon_location = line.find(":");
       user = line.substr(0, colon_location);
     }
   }
+  // std::cout << "User: *" << user << "*" << std::endl;
 
   return user;
 }

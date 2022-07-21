@@ -9,7 +9,7 @@
 int main() {
   System system;
   // Processor processor;
-  // Process process = Process(1130);
+  // Process process = Process(1);
   NCursesDisplay::Display(system);
   /*
   std::cout << "System Uptime: " << system.UpTime() << std::endl;
