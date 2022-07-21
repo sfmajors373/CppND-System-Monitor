@@ -81,7 +81,7 @@ float LinuxParser::MemoryUtilization() {
     getline(meminfo_file, mem_free_line);
   }
   // mem total
-  for (int i = 0; i < mem_total_line.length(); i++) {
+  for (long unsigned int i = 0; i < mem_total_line.length(); i++) {
     if (mem_total_line[i] == ' ') {
       space_positions.push_back(i);
     }
@@ -94,7 +94,7 @@ float LinuxParser::MemoryUtilization() {
   int mem_total_int = std::stoi(mem_total_str);
 
   // mem free
-  for (int i = 0; i < mem_free_line.length(); i++) {
+  for (long unsigned int i = 0; i < mem_free_line.length(); i++) {
     if (mem_free_line[i] == ' ') {
       space_positions2.push_back(i);
     }
@@ -128,20 +128,15 @@ long LinuxParser::UpTime() {
   return uptime;
 }
 
-// TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
-
 // Read and return the number of active jiffies for a PID
 long LinuxParser::ActiveJiffies(int pid) {
   string line;
   std::ifstream stat_file("/proc/" + std::to_string(pid) + "/stat");
   std::vector<int> space_positions;
-  long int uptime;
   long int jiffies;
   string jiffies_string;
-  long int seconds;
   while (getline(stat_file, line)) {
-    for (int i = 0; i < line.length(); i++) {
+    for (long unsigned int i = 0; i < line.length(); i++) {
       if (line[i] == ' ') {
         space_positions.push_back(i);
       }
@@ -153,16 +148,6 @@ long LinuxParser::ActiveJiffies(int pid) {
   return jiffies;
 }
 
-// TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
-
-// TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
-
-// TODO: Read and return CPU utilization
-// ????? A vector of what????  In what order????  What does it mean???
-vector<string> LinuxParser::CpuUtilization() { return {}; }
-
 // Read and return the total number of processes
 int LinuxParser::TotalProcesses() {
   string line;
@@ -171,7 +156,7 @@ int LinuxParser::TotalProcesses() {
   std::ifstream stats_file("/proc/stat");
   while (getline(stats_file, line)) {
     if (line.find("processes") != std::string::npos) {
-      for (int i = 0; i < line.length(); i++) {
+      for (long unsigned int i = 0; i < line.length(); i++) {
         if (line[i] == ' ') {
           space_positions.push_back(i);
         }
@@ -191,7 +176,7 @@ int LinuxParser::RunningProcesses() {
   std::ifstream stats_file("/proc/stat");
   while (getline(stats_file, line)) {
     if (line.find("procs_running") != std::string::npos) {
-      for (int i = 0; i < line.length(); i++) {
+      for (long unsigned int i = 0; i < line.length(); i++) {
         if (line[i] == ' ') {
           space_positions.push_back(i);
         }
@@ -218,9 +203,11 @@ string LinuxParser::Ram(int pid) {
   string line;
   std::vector<int> space_positions;
   std::ifstream command_file("/proc/" + std::to_string(pid) + "/status");
+  float mb_float = 0.0;
   while (getline(command_file, line)) {
-    if (line.find("VmSize") != std::string::npos) {
-      for (int i = 0; i < line.length(); i++) {
+    // Using VmRSS to reflect my phyical RAM size, not VM size
+    if (line.find("VmRSS") != std::string::npos) {
+      for (long unsigned int i = 0; i < line.length(); i++) {
         if (line[i] == ' ') {
           space_positions.push_back(i);
         }
@@ -230,10 +217,11 @@ string LinuxParser::Ram(int pid) {
       string kb_string = line.substr(space_positions[spaces - 2], length);
       int kb_int = std::stoi(kb_string);
       // convert kb to mb
-      float mb_float = (float)kb_int / 1000;
+      mb_float = (float)kb_int / 1000;
       return std::to_string(mb_float);
     }
   }
+  return "0.0";
 }
 
 // Read and return the user ID associated with a process
@@ -244,7 +232,7 @@ string LinuxParser::Uid(int pid) {
   string user;
   while (getline(status_file, line)) {
     if (line.find("Uid") != std::string::npos) {
-      for (int i = 0; i < line.length(); i++) {
+      for (long unsigned int i = 0; i < line.length(); i++) {
         if (line[i] == '\t') {
           space_positions.push_back(i);
         }

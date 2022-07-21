@@ -62,15 +62,19 @@ float Processor::Utilization() {
   // std::cout << "Steal: " << steal_string << std::endl;
   int steal = std::stoi(steal_string);
 
+  /*
   word_size = space_positions[10] - space_positions[9];
   string guest_string = line.substr(space_positions[9], word_size);
   // std::cout << "Guest: " << guest_string << std::endl;
   int guest = std::stoi(guest_string);
+  */
 
+  /*
   word_size = space_positions[11] - space_positions[10];
   string guest_nice_string = line.substr(space_positions[10], word_size);
   // std::cout << "Guest Nice: " << guest_nice_string << std::endl;
   int guest_nice = std::stoi(guest_nice_string);
+  */
 
   int Idle = idle + iowait;
   int NonIdle = user + nice + system + irq + softirq + steal;

@@ -33,13 +33,12 @@ float Process::CpuUtilization() const {
   string jiffies_string;
   long utime;
   long stime;
-  long starttime;
   float cpu_usage;
   long jiffies;
   // std::cout << "System Uptime: " << system_uptime << std::endl;
   if (stat_file.is_open()) {
     getline(stat_file, line);
-    for (int i = 0; i < line.length(); i++) {
+    for (long unsigned int i = 0; i < line.length(); i++) {
       if (line[i] == ' ') {
         space_positions.push_back(i);
       }
@@ -63,13 +62,21 @@ float Process::CpuUtilization() const {
 
     long total_time = utime + stime;
     long seconds = system_uptime - ((float)jiffies / sysconf(_SC_CLK_TCK));
-    cpu_usage = 100 * (((float)total_time / sysconf(_SC_CLK_TCK)) / seconds);
+    cpu_usage = (((float)total_time / sysconf(_SC_CLK_TCK)) / seconds);
   }
   return cpu_usage;
 }
 
 // Return the command that generated this process
-string Process::Command() { return LinuxParser::Command(this->pid_); }
+string Process::Command() {
+  string command = LinuxParser::Command(this->pid_);
+  if (command.length() < 40) {
+    return command;
+  } else {
+    // Limit the length of the command shown to 40 characters
+    return command.substr(0, 40) + "...";
+  }
+}
 
 // Return this process's memory utilization
 string Process::Ram() { return LinuxParser::Ram(this->pid_); }
@@ -78,7 +85,9 @@ string Process::Ram() { return LinuxParser::Ram(this->pid_); }
 string Process::User() { return LinuxParser::User(this->pid_); }
 
 // Return the age of this process (in seconds)
-long int Process::UpTime() { return LinuxParser::UpTime(this->pid_); }
+long int Process::UpTime() {
+  return LinuxParser::UpTime() - LinuxParser::UpTime(this->pid_);
+}
 
 // Overload the "less than" comparison operator for Process objects
 // Sorting by CPU Utilization

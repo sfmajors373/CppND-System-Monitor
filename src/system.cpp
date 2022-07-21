@@ -26,17 +26,16 @@ format. cpp for formatting the uptime.*/
 
 // Return the system's CPU
 Processor& System::Cpu() {
-  Processor cpu_;
+  // Processor cpu_;
   return cpu_;
 }
 
 // Return a container composed of the system's processes
 vector<Process>& System::Processes() {
-  vector<int> pids = LinuxParser::Pids();
+  const vector<int>& pids = LinuxParser::Pids();
   processes_.clear();
-  for (int i = 0; i < pids.size(); i++) {
-    Process process(pids[i]);
-    processes_.push_back(process);
+  for (const int& pid : pids) {
+    processes_.emplace_back(pid);
   }
   return processes_;
 }
@@ -71,11 +70,8 @@ std::string System::OperatingSystem() {
   std::vector<int> quote_positions;
   std::ifstream os_file("/etc/os-release");
   while (getline(os_file, line)) {
-    // std::cout << "line: " << line << std::endl;
-    // std::cout << "line.find(): " << line.find("PRETTY_NAME") << std::endl;
     if (line.find("PRETTY_NAME") != std::string::npos) {
-      // std::cout << "pretty name: " << line << std::endl;
-      for (int i = 0; i < line.length(); i++) {
+      for (long unsigned int i = 0; i < line.length(); i++) {
         if (line[i] == '"') {
           quote_positions.push_back(i);
         }
