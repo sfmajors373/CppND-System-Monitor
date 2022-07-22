@@ -82,7 +82,16 @@ string Process::Command() {
 string Process::Ram() { return LinuxParser::Ram(this->pid_); }
 
 // Return the user (name) that generated this process
-string Process::User() { return LinuxParser::User(this->pid_); }
+string Process::User() {
+  string user = LinuxParser::User(this->pid_);
+  if (user.length() < 7) {
+    return user;
+  } else {
+    // Limit the length of the username
+    // else it extends into CPU%
+    return user.substr(0, 7);
+  }
+}
 
 // Return the age of this process (in seconds)
 long int Process::UpTime() {

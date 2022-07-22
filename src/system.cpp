@@ -35,7 +35,12 @@ vector<Process>& System::Processes() {
   const vector<int>& pids = LinuxParser::Pids();
   processes_.clear();
   for (const int& pid : pids) {
-    processes_.emplace_back(pid);
+    Process new_process(pid);
+    if (new_process.Command() == "" || new_process.Ram() == "") {
+      continue;
+    } else {
+      processes_.emplace_back(pid);
+    }
   }
   return processes_;
 }
