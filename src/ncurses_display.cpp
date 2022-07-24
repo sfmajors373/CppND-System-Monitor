@@ -16,7 +16,7 @@ using std::to_string;
 // 50 bars uniformly displayed from 0 - 100 %
 // 2% is one bar(|)
 std::string NCursesDisplay::ProgressBar(float percent) {
-  std::string result{"0%"};
+  std::string result{""};
   int size{50};
   float bars{percent * size};
 
@@ -58,7 +58,7 @@ void NCursesDisplay::DisplayProcesses(std::vector<Process>& processes,
                                       WINDOW* window, int n) {
   int row{0};
   int const pid_column{2};
-  int const user_column{9};
+  int const user_column{8};
   int const cpu_column{16};
   int const ram_column{26};
   int const time_column{35};

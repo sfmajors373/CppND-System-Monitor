@@ -4,6 +4,7 @@
 
 #include <cctype>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -79,7 +80,16 @@ string Process::Command() {
 }
 
 // Return this process's memory utilization
-string Process::Ram() { return LinuxParser::Ram(this->pid_); }
+string Process::Ram() {
+  string ram = LinuxParser::Ram(this->pid_);
+  int decimal_place;
+  for (long unsigned int i = 0; i < ram.length(); i++) {
+    if (ram[i] == '.') {
+      decimal_place = i;
+    }
+  }
+  return ram.substr(0, decimal_place + 3);
+}
 
 // Return the user (name) that generated this process
 string Process::User() {
